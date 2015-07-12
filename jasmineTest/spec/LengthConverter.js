@@ -59,6 +59,21 @@ describe('LengthConverter', function() {
     expect(distance['Centimeter']).toBeUndefined();
     expect(distance['Millimeter']).toBeUndefined();
     expect(distance['Mile']).toBeUndefined();
-  })
+  });
 
 });
+
+describe('For the variable share between spec', function() {
+  beforeEach(function() {
+    this.foo = 0;
+  });
+  it("can use the 'this' to share the state", function() {
+    expect(this.foo).toEqual(0);
+    this.bar = 'test popullation?';
+  });
+  it("prevents test popullation by having an empty 'this' created for the next spec", function() {
+    expect(this.foo).toEqual(0);
+    expect(this.bar).toBe(undefined);
+  })
+});
+

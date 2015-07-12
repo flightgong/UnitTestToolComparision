@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>QUnit Example</title>
+    <link rel="stylesheet" href="//code.jquery.com/qunit/qunit-1.18.0.css">
+</head>
+<body>
+<div id="qunit"></div>
+<div id="qunit-fixture">
+    test fixture
+</div>
+<script src="../src/lib/jquery-1.11.3.min.js"></script>
+<script src="lib/qunit-1.18.0.js"></script>
+<link rel="stylesheet" href="lib/qunit-1.18.0.css">
+<script src="sinon-1.15.4.js"></script>
+<script src="sinon-qunit-1.0.0.js"></script>
+<script src="../src/js/LengthConverter.js"></script>
+<script src="../src/js/ajaxCall.js"></script>
+<script src="../src/js/DomEvent.js"></script>
+<script>
+    module('regual workflow', {
+        setup: function() {
+            this.lengthConverter = new LengthConverter();
+        }
+    });
+
+    QUnit.test("isNumber returns true for valid inputs", function() {
+        ok(this.lengthConverter.isNumber('5'));
+        ok(this.lengthConverter.isNumber('8e5'));
+        ok(this.lengthConverter.isNumber('0x89f'));
+    });
+
+    QUnit.test("convert calcuates correct values for valid number input", function(assert) {
+        var distance = this.lengthConverter.convert(200, 'Centimeter');
+        assert.equal(distance['Kilometer'], 0.002);
+        assert.equal(distance['Meter'], 2);
+        assert.equal(distance["Centimeter"], 200);
+        assert.equal(distance['Millimeter'], 2000);
+        assert.equal(distance['Mile'],0.001242742);
+    });
+
+    QUnit.test("convert returns zeros values for zero number", function(assert) {
+        var distance = this.lengthConverter.convert(0, 'Centimeter');
+        assert.equal(distance['Kilometer'], 0);
+        assert.equal(distance['Meter'], 0);
+        assert.equal(distance["Centimeter"], 0);
+        assert.equal(distance['Millimeter'], 0);
+        assert.equal(distance['Mile'],0);
+    });
+
+    QUnit.test("convert returns no values for invalid number", function() {
+        var distance =  this.lengthConverter.convert("hello", "Foot");
+        ok(distance['kilometer'] === undefined);
+        ok(distance['Meter'] === undefined);
+        ok(distance['Centimeter'] === undefined);
+        ok(distance['Millimeter'] === undefined);
+        ok(distance['Mile'] === undefined);
+    });
+
+    QUnit.test("convert return no values for invalid unit", function() {
+        var distance = this.lengthConverter.convert(500, 'Litter');
+        ok(distance['kilometer'] === undefined);
+        ok(distance['Meter'] === undefined);
+        ok(distance['Centimeter'] === undefined);
+        ok(distance['Millimeter'] === undefined);
+        ok(distance['Mile'] === undefined);
+    });
+
+
+    module('call rest service', {
+        setup: function() {
+            this.promise= $.get('../src/data.json');
+        },
+        teardown: function() {
+            this.server.restore();
+            //delete this.server;
+        }
+    });
+
+    QUnit.test("get the right response when call the right url", function(assert) {
+
+   var done=assert.async();
+        this.server = sinon.fakeServer.create();
+        var that = this;
+        this.promise.done(function (data) {
+            that.server.respondWith('GET', 'url.com', [200, {"Content-Type": "application/json"}, JSON.stringify(data)]);
+            var callbackSuccess = sinon.spy();
+            var callbackError = sinon.spy();
+            CallRestApi.get("url.com", callbackSuccess, callbackError);
+            that.server.respond();
+
+
+            ok(callbackSuccess.calledOnce,"sucess callback");
+            ok(callbackSuccess.calledWith(data),"data is correct");
+            done();
+        });
+    });
+
+
+
+    module('DOM Manipulation');
+    QUnit.test("createChild fun should work", function() {
+        $('<div id="innerDiv"></div>').appendTo("#qunit-fixture");
+        DOMHandler.createChild("#qunit-fixture");
+        ok("New btn" == $('button#new').text(), "create the new button");
+        ok("rgb(255, 0, 0)" == $('button#new').css('background-color'), "change the background color");
+        $('button#new').click();
+        ok("Hello World" == $("#innerDiv").html(), "click event bind");
+
+    });
+
+
+    /* QUnit.test("DOM manipulation", function() {
+
+     }*/
+</script>
+</body>
+</html>
+</body>
+</html>
+
